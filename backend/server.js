@@ -29,6 +29,8 @@ app.get("/auth/login", (req, res) => {
 
   global.codeVerifier = codeVerifier;
 
+  console.log("REDIRECT_URI =", process.env.REDIRECT_URI);
+
   const authUrl =
     `${process.env.LOGIN_URL}/services/oauth2/authorize` +
     `?response_type=code` +

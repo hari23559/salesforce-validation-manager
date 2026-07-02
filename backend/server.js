@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const crypto = require("crypto");
 const axios = require("axios");
 const jsforce = require("jsforce");
 
@@ -15,30 +14,15 @@ app.get("/", (req, res) => {
   res.send("Salesforce Validation Manager Backend Running");
 });
 
-
 app.get("/auth/login", (req, res) => {
-  const codeVerifier = crypto.randomBytes(32).toString("hex");
-
-  const codeChallenge = crypto
-    .createHash("sha256")
-    .update(codeVerifier)
-    .digest("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-
-  global.codeVerifier = codeVerifier;
-
-console.log("LOGIN_URL =", process.env.LOGIN_URL);
-console.log("REDIRECT_URI =", process.env.REDIRECT_URI);
+  console.log("LOGIN_URL =", process.env.LOGIN_URL);
+  console.log("REDIRECT_URI =", process.env.REDIRECT_URI);
 
   const authUrl =
     `${process.env.LOGIN_URL}/services/oauth2/authorize` +
     `?response_type=code` +
     `&client_id=${process.env.CLIENT_ID}` +
-    `&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}` +
-    `&code_challenge=${codeChallenge}` +
-    `&code_challenge_method=S256`;
+    `&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}`;
 
   res.redirect(authUrl);
 });
@@ -54,8 +38,7 @@ app.get("/auth/callback", async (req, res) => {
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
         redirect_uri: process.env.REDIRECT_URI,
-        code: code,
-        code_verifier: global.codeVerifier
+        code: code
       }),
       {
         headers: {
@@ -67,10 +50,15 @@ app.get("/auth/callback", async (req, res) => {
     global.accessToken = response.data.access_token;
     global.instanceUrl = response.data.instance_url;
 
-    console.log("Access Token:", global.accessToken ? "Received" : "Missing");
+    console.log(
+      "Access Token:",
+      global.accessToken ? "Received" : "Missing"
+    );
     console.log("Instance URL:", global.instanceUrl);
 
-    res.send("Salesforce login successful. Access token received.");
+    res.send(
+      "Salesforce login successful. Access token received."
+    );
   } catch (error) {
     console.log(error.response?.data || error.message);
     res.status(500).send("Failed to get access token.");
@@ -111,7 +99,6 @@ app.post("/toggle-rule", async (req, res) => {
 
     const fullName = `Account.${ruleName}`;
 
-    // Read existing metadata
     const metadata = await conn.metadata.read(
       "ValidationRule",
       fullName
@@ -123,10 +110,8 @@ app.post("/toggle-rule", async (req, res) => {
       });
     }
 
-    // Change active status
     metadata.active = active;
 
-    // Update in Salesforce
     const result = await conn.metadata.update(
       "ValidationRule",
       metadata
@@ -146,6 +131,8 @@ app.post("/toggle-rule", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

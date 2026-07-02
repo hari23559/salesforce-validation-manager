@@ -5,35 +5,35 @@ function App() {
   const [rules, setRules] = useState([]);
 
   const loginToSalesforce = () => {
-    window.location.href = "http://localhost:5000/auth/login";
+    window.location.href =
+      "https://salesforce-validation-manager-backend-9pn9.onrender.com/auth/login";
   };
 
   const getValidationRules = async () => {
     const response = await axios.get(
-      "http://localhost:5000/validation-rules"
+      "https://salesforce-validation-manager-backend-9pn9.onrender.com/validation-rules"
     );
     setRules(response.data);
   };
 
- const toggleRule = async (rule) => {
-  try {
-    await axios.post(
-      "http://localhost:5000/toggle-rule",
-      {
-        ruleName: rule.ValidationName,
-        active: !rule.Active
-      }
-    );
+  const toggleRule = async (rule) => {
+    try {
+      await axios.post(
+        "https://salesforce-validation-manager-backend-9pn9.onrender.com/toggle-rule",
+        {
+          ruleName: rule.ValidationName,
+          active: !rule.Active
+        }
+      );
 
-    await getValidationRules();
+      await getValidationRules();
 
-    alert("Validation rule updated successfully.");
-
-  } catch (error) {
-    console.error(error);
-    alert("Failed to update validation rule.");
-  }
-};
+      alert("Validation rule updated successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update validation rule.");
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -66,10 +66,10 @@ function App() {
               <td>{rule.ValidationName}</td>
               <td>{rule.Active ? "Yes" : "No"}</td>
               <td>
-    <button onClick={() => toggleRule(rule)}>
-  {rule.Active ? "Disable" : "Enable"}
-</button>
-  </td>
+                <button onClick={() => toggleRule(rule)}>
+                  {rule.Active ? "Disable" : "Enable"}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
